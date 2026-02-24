@@ -1,15 +1,13 @@
 import { Briefcase, Eye, PlusCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-const stats = [
-  { label: "My Postings", value: "12", icon: Briefcase, change: "+2" },
-  { label: "Total Views", value: "1,847", icon: Eye, change: "+15%" },
-  { label: "Active Events", value: "8", icon: TrendingUp, change: "+1" },
-  { label: "Saves", value: "234", icon: PlusCircle, change: "+18%" },
-];
+// stats will be generated inside component because some values depend on state
 
-const myPostings = [
+// sample static postings that always appear (could be removed if not needed)
+const staticPostings = [
   { id: 1, title: "Summer Internship at TechCorp", category: "Internship", views: 245, saves: 34, deadline: "2026-03-20", status: "active" },
   { id: 2, title: "AI/ML Workshop - March 2026", category: "Workshop", views: 189, saves: 22, deadline: "2026-03-05", status: "active" },
   { id: 3, title: "Campus Coding Contest", category: "Hackathon", views: 312, saves: 56, deadline: "2026-02-28", status: "expiring" },
@@ -17,6 +15,45 @@ const myPostings = [
 ];
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const [myPostings, setMyPostings] = useState<any[]>([]);
+
+  const stats = [
+    { label: "My Postings", value: myPostings.length.toString(), icon: Briefcase, change: "" },
+    // other stats could also be computed from postings
+    { label: "Total Views", value: myPostings.reduce((sum, p) => sum + (p.views || 0), 0).toLocaleString(), icon: Eye, change: "" },
+    { label: "Active Events", value: myPostings.filter(p => p.status !== 'expired').length.toString(), icon: TrendingUp, change: "" },
+    { label: "Saves", value: myPostings.reduce((sum, p) => sum + (p.saves || 0), 0).toLocaleString(), icon: PlusCircle, change: "" },
+  ];
+
+  const loadPostings = () => {
+    const stored: any[] = JSON.parse(localStorage.getItem('postedOpportunities') || '[]');
+    setMyPostings([...staticPostings, ...stored]);
+  };
+
+  useEffect(() => {
+    loadPostings();
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'postedOpportunities') {
+        loadPostings();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  const handleDelete = (id: number) => {
+    // remove from localStorage array as well
+    const stored: any[] = JSON.parse(localStorage.getItem('postedOpportunities') || '[]');
+    const filtered = stored.filter(o => o.id !== id);
+    localStorage.setItem('postedOpportunities', JSON.stringify(filtered));
+    setMyPostings(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handleEdit = (id: number) => {
+    navigate(`/dashboard/post?id=${id}`);
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -24,7 +61,7 @@ const AdminDashboard = () => {
           <h1 className="text-2xl font-display font-bold text-foreground">Admin Dashboard</h1>
           <p className="text-muted-foreground mt-1">Manage and track your posted opportunities</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => navigate('/dashboard/post')}>
           <PlusCircle className="w-4 h-4" /> Post New
         </Button>
       </div>
@@ -57,15 +94,16 @@ const AdminDashboard = () => {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {post.views} views · {post.saves} saves · Deadline: {post.deadline}
+                  {post.views || 0} views · {post.saves || 0} saves · Deadline: {post.deadline}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" className="h-8 text-xs">Edit</Button>
-                <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive">Delete</Button>
+                <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleEdit(post.id)}>Edit</Button>
+                <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive" onClick={() => handleDelete(post.id)}>Delete</Button>
               </div>
             </div>
           ))}
+          {myPostings.length === 0 && <p className="text-center text-sm text-muted-foreground">No postings yet.</p>}
         </div>
       </div>
     </div>
