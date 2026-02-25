@@ -39,29 +39,7 @@ Zustand / Context API (for state management)
 
 Lucide React Icon
 
-📂 Project Structure
-campusEvent/
-│
-├── src/
-│   ├── components/
-│   │   ├── ui/
-│   │   ├── OpportunityCard.tsx
-│   │
-│   ├── pages/ (or app/)
-│   │   ├── admin/
-│   │   ├── student/
-│   │
-│   ├── store/
-│   │   └── programStore.ts
-│   │
-│   ├── context/
-│   │   └── ProgramContext.tsx
-│   │
-│   └── types/
-│       └── program.ts
-│
-├── package.json
-└── README.md
+
 🔑 Features
 👨‍💼 Admin Features
 
