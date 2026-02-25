@@ -1,73 +1,157 @@
-# Welcome to your Lovable project
+🎓 CampusEvent Website
 
-## Project info
+A modern campus event and opportunity management platform where administrators can create and manage programs, and students can explore and apply for them.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+🚀 Overview
 
-## How can I edit this code?
+CampusEvent is a role-based web application designed for educational institutions.
 
-There are several ways of editing your application.
+It includes:
 
-**Use Lovable**
+👨‍💼 Admin Dashboard
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Create new programs / events
 
-Changes made via Lovable will be committed automatically to this repo.
+Edit and manage opportunities
 
-**Use your preferred IDE**
+Post announcements
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+🎓 Student Dashboard
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Browse opportunities
 
-Follow these steps:
+Search & filter by category
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Save programs
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+View deadlines & details
 
-# Step 3: Install the necessary dependencies.
-npm i
+🛠 Tech Stack
+Frontend
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+React / Next.js
 
-**Edit a file directly in GitHub**
+TypeScript
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Tailwind CSS
 
-**Use GitHub Codespaces**
+Zustand / Context API (for state management)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Lucide React Icon
 
-## What technologies are used for this project?
+📂 Project Structure
+campusEvent/
+│
+├── src/
+│   ├── components/
+│   │   ├── ui/
+│   │   ├── OpportunityCard.tsx
+│   │
+│   ├── pages/ (or app/)
+│   │   ├── admin/
+│   │   ├── student/
+│   │
+│   ├── store/
+│   │   └── programStore.ts
+│   │
+│   ├── context/
+│   │   └── ProgramContext.tsx
+│   │
+│   └── types/
+│       └── program.ts
+│
+├── package.json
+└── README.md
+🔑 Features
+👨‍💼 Admin Features
 
-This project is built with:
+Add new event/program
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Edit existing program
 
-## How can I deploy this project?
+Set deadline, skills, category
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Real-time update (without database)
 
-## Can I connect a custom domain to my Lovable project?
+🎓 Student Features
 
-Yes, you can!
+Explore opportunities
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Search functionality
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Category filtering
+
+Save/Bookmark feature
+
+View days left & deadline status
+
+Alternate card layout with images
+
+🔄 Data Flow (Without Database)
+Admin Dashboard
+       ↓
+Global State (Zustand / Context API)
+       ↓
+Student Dashboard
+
+Programs are stored in global state.
+
+When admin adds a new program → it instantly appears in student dashboard.
+
+Optional: localStorage can be used to persist data after refresh.
+
+📌 Usage
+Admin Dashboard
+
+Navigate to /admin
+
+Fill program details
+
+Submit form
+
+Program will appear instantly on student dashboard
+
+Student Dashboard
+
+Navigate to /student
+
+Browse available opportunities
+
+Use search & filter options
+
+Bookmark programs
+
+🎨 UI Design Highlights
+
+Responsive layout
+
+Alternating image card design
+
+Clean modern dashboard UI
+
+Soft shadows and hover animations
+
+Professional typography
+
+Tailwind utility-first styling
+
+🧠 Future Improvements
+
+Backend integration (NestJS + PostgreSQL)
+
+Authentication with role-based access
+
+JWT Authorization
+
+Real-time notifications
+
+Application submission system
+
+Email alerts
+
+File upload support
+
+🔒 Role-Based Access (Planned)
+Role	Access
+Admin	Create, Edit, Delete Programs
+Student	View, Search, Save Programs
