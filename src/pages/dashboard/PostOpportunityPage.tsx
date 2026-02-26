@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus, Send, CheckCircle } from "lucide-react";
+import { X, Plus, Send, CheckCircle, Users, User } from "lucide-react";
 
 const PostOpportunityPage = () => {
   const [organization, setOrganization] = useState("");
@@ -20,6 +20,10 @@ const PostOpportunityPage = () => {
   const [deadline, setDeadline] = useState("");
   const [applyLink, setApplyLink] = useState("");
   const [openings, setOpenings] = useState("");
+  const [eventType, setEventType] = useState<"single" | "group">("single");
+  const [registrationFee, setRegistrationFee] = useState("");
+  const [groupMinMembers, setGroupMinMembers] = useState(2);
+  const [groupMaxMembers, setGroupMaxMembers] = useState(4);
 
   const [skills, setSkills] = useState<string[]>([]);
   const [currentSkill, setCurrentSkill] = useState("");
@@ -48,6 +52,10 @@ const PostOpportunityPage = () => {
         setApplyLink(opp.applyLink || "");
         setOpenings(opp.openings ? String(opp.openings) : "");
         setSkills(opp.skills || []);
+        setEventType(opp.eventType || "single");
+        setRegistrationFee(opp.registrationFee || "");
+        setGroupMinMembers(opp.groupMinMembers || 2);
+        setGroupMaxMembers(opp.groupMaxMembers || 4);
       }
     }
   }, [editId]);
@@ -93,6 +101,10 @@ const PostOpportunityPage = () => {
           duration,
           applyLink,
           openings: openings ? parseInt(openings, 10) : undefined,
+          eventType,
+          registrationFee,
+          groupMinMembers: eventType === 'group' ? groupMinMembers : undefined,
+          groupMaxMembers: eventType === 'group' ? groupMaxMembers : undefined,
         };
       }
     } else {
@@ -115,6 +127,10 @@ const PostOpportunityPage = () => {
         logo: '',
         requirements: [],
         perks: [],
+        eventType,
+        registrationFee,
+        groupMinMembers: eventType === 'group' ? groupMinMembers : undefined,
+        groupMaxMembers: eventType === 'group' ? groupMaxMembers : undefined,
       };
       stored.push(newOpp);
     }
@@ -139,6 +155,10 @@ const PostOpportunityPage = () => {
         setOpenings('');
         setSkills([]);
         setCurrentSkill("");
+        setEventType('single');
+        setRegistrationFee('');
+        setGroupMinMembers(2);
+        setGroupMaxMembers(4);
       }
       setTimeout(() => setShowSuccess(false), 3000);
       // after editing or new, go back to dashboard list
@@ -373,6 +393,105 @@ const PostOpportunityPage = () => {
                   type="number"
                   placeholder="e.g. 10"
                   className="border-slate-200 focus:border-slate-400 max-w-xs"
+                  value={openings}
+                  onChange={e => setOpenings(e.target.value)}
+                />
+              </div>
+
+              {/* Event Type */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">Event Type <span className="text-red-500">*</span></Label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEventType('single')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${eventType === 'single'
+                      ? 'border-slate-900 bg-slate-900 text-white'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      }`}
+                  >
+                    <User className="w-4 h-4" />
+                    Single
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEventType('group')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${eventType === 'group'
+                      ? 'border-accent bg-accent text-white'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      }`}
+                  >
+                    <Users className="w-4 h-4" />
+                    Group
+                  </button>
+                </div>
+              </div>
+
+              {/* Group Size — visible only when Group is selected */}
+              {eventType === 'group' && (
+                <div className="space-y-3 p-4 bg-accent/5 border border-accent/20 rounded-xl">
+                  <Label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-accent" />
+                    Group Size
+                    <span className="text-slate-400 text-xs font-normal">(members per team)</span>
+                  </Label>
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Minimum */}
+                    <div className="space-y-2">
+                      <p className="text-xs text-slate-500 font-medium">Minimum</p>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setGroupMinMembers(m => Math.max(2, m - 1))}
+                          className="w-9 h-9 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-600 hover:border-accent hover:text-accent transition disabled:opacity-40"
+                          disabled={groupMinMembers <= 2}
+                        >−</button>
+                        <span className="w-10 text-center text-lg font-bold text-slate-900">{groupMinMembers}</span>
+                        <button
+                          type="button"
+                          onClick={() => setGroupMinMembers(m => Math.min(groupMaxMembers, m + 1))}
+                          className="w-9 h-9 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-600 hover:border-accent hover:text-accent transition disabled:opacity-40"
+                          disabled={groupMinMembers >= groupMaxMembers}
+                        >+</button>
+                      </div>
+                    </div>
+                    {/* Maximum */}
+                    <div className="space-y-2">
+                      <p className="text-xs text-slate-500 font-medium">Maximum</p>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setGroupMaxMembers(m => Math.max(groupMinMembers, m - 1))}
+                          className="w-9 h-9 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-600 hover:border-accent hover:text-accent transition disabled:opacity-40"
+                          disabled={groupMaxMembers <= groupMinMembers}
+                        >−</button>
+                        <span className="w-10 text-center text-lg font-bold text-slate-900">{groupMaxMembers}</span>
+                        <button
+                          type="button"
+                          onClick={() => setGroupMaxMembers(m => Math.min(20, m + 1))}
+                          className="w-9 h-9 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-600 hover:border-accent hover:text-accent transition disabled:opacity-40"
+                          disabled={groupMaxMembers >= 20}
+                        >+</button>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-accent/80">
+                    Students must register with {groupMinMembers}–{groupMaxMembers} members.
+                  </p>
+                </div>
+              )}
+
+              {/* Registration Fee */}
+              <div className="space-y-2">
+                <Label htmlFor="registrationFee" className="text-sm font-medium text-slate-700">
+                  Registration Fee <span className="text-slate-400 text-xs">(optional — leave blank if free)</span>
+                </Label>
+                <Input
+                  id="registrationFee"
+                  placeholder="e.g. ₹500, $10, Free"
+                  className="border-slate-200 focus:border-slate-400 max-w-xs"
+                  value={registrationFee}
+                  onChange={e => setRegistrationFee(e.target.value)}
                 />
               </div>
             </CardContent>

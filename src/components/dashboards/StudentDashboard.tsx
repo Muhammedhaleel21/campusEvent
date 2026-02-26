@@ -227,8 +227,13 @@ const StudentDashboard = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
 
+  // Group registration form state
+  const [showGroupForm, setShowGroupForm] = useState(false);
+  const [memberCount, setMemberCount] = useState(2);
+  const [memberNames, setMemberNames] = useState<string[]>(['', '']);
+
   // combine base static opportunities with any posted via localStorage
-  const [opportunitiesList, setOpportunitiesList] = useState<typeof baseOpportunities>([]);
+  const [opportunitiesList, setOpportunitiesList] = useState<any[]>([]);
 
   // load cached posts once on mount
   const loadFromStorage = () => {
@@ -286,9 +291,40 @@ const StudentDashboard = () => {
       const opportunity = opportunitiesList.find(opp => opp.id === id);
       setNotificationMessage(`Successfully registered for ${opportunity?.title}!`);
       setShowNotification(true);
-      setSelectedOpportunity(null); // Close the modal
+      setSelectedOpportunity(null);
+      setShowGroupForm(false);
       setTimeout(() => setShowNotification(false), 3000);
     }
+  };
+
+  const handleGroupRegister = () => {
+    if (!selectedOpportunity) return;
+    const filled = memberNames.slice(0, memberCount).every(n => n.trim().length > 0);
+    if (!filled) {
+      alert('Please fill in all member names.');
+      return;
+    }
+    handleRegister(selectedOpportunity.id);
+  };
+
+  const updateMemberCount = (count: number) => {
+    const minM = selectedOpportunity?.groupMinMembers ?? 2;
+    const maxM = selectedOpportunity?.groupMaxMembers ?? 10;
+    const clamped = Math.max(minM, Math.min(maxM, count));
+    setMemberCount(clamped);
+    setMemberNames(prev => {
+      const copy = [...prev];
+      while (copy.length < clamped) copy.push('');
+      return copy.slice(0, clamped);
+    });
+  };
+
+  const openModal = (opp: any) => {
+    setSelectedOpportunity(opp);
+    setShowGroupForm(false);
+    const initialCount = opp.groupMinMembers ?? 2;
+    setMemberCount(initialCount);
+    setMemberNames(Array(initialCount).fill(''));
   };
 
   const getCategoryIcon = (category: string) => {
@@ -392,8 +428,8 @@ const StudentDashboard = () => {
                   size="sm"
                   variant={activeCategory === cat ? "default" : "outline"}
                   className={`text-xs whitespace-nowrap rounded-full px-4 ${activeCategory === cat
-                      ? 'bg-gradient-to-r from-accent to-accent/80 text-white'
-                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'bg-gradient-to-r from-accent to-accent/80 text-white'
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   onClick={() => setActiveCategory(cat)}
                 >
@@ -410,7 +446,7 @@ const StudentDashboard = () => {
             <div
               key={opp.id}
               className="group bg-white rounded-2xl shadow-sm hover:shadow-xl border border-slate-100 overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-              onClick={() => setSelectedOpportunity(opp)}
+              onClick={() => openModal(opp)}
             >
               <div className="flex p-5">
                 {/* Left Side - Image/Logo */}
@@ -433,6 +469,13 @@ const StudentDashboard = () => {
                     <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
                       {getCategoryIcon(opp.category)} {opp.category}
                     </span>
+                    {opp.eventType === 'group' && (
+                      <div className="mt-1">
+                        <span className="text-[10px] font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                          <Users className="w-2.5 h-2.5" /> Group
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -463,8 +506,8 @@ const StudentDashboard = () => {
                         toggleSave(opp.id);
                       }}
                       className={`flex-shrink-0 ml-2 p-2 rounded-lg transition-all ${savedIds.includes(opp.id)
-                          ? 'bg-accent/10 text-accent'
-                          : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                        ? 'bg-accent/10 text-accent'
+                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
                         }`}
                     >
                       {savedIds.includes(opp.id)
@@ -568,7 +611,14 @@ const StudentDashboard = () => {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-slate-900">{selectedOpportunity.title}</h2>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-2xl font-display font-bold text-slate-900">{selectedOpportunity.title}</h2>
+                    {selectedOpportunity.eventType === 'group' && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-accent text-white">
+                        <Users className="w-3 h-3" /> Group Event
+                      </span>
+                    )}
+                  </div>
                   <p className="text-slate-600 flex items-center gap-2 mt-1">
                     <span className="font-medium">{selectedOpportunity.org}</span>
                     <span className="w-1 h-1 rounded-full bg-slate-300"></span>
@@ -644,6 +694,13 @@ const StudentDashboard = () => {
                     <p className="text-sm font-semibold text-slate-900">{selectedOpportunity.duration}</p>
                   </div>
                 )}
+                {selectedOpportunity.registrationFee && (
+                  <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+                    <DollarSign className="w-4 h-4 text-emerald-600 mb-1" />
+                    <p className="text-xs text-slate-500">Fee</p>
+                    <p className="text-sm font-semibold text-emerald-700">{selectedOpportunity.registrationFee}</p>
+                  </div>
+                )}
                 <div className="bg-slate-50 rounded-xl p-3">
                   <Users className="w-4 h-4 text-accent mb-1" />
                   <p className="text-xs text-slate-500">Applicants</p>
@@ -697,26 +754,124 @@ const StudentDashboard = () => {
               )}
             </div>
 
-            {/* Modal Footer - Only Register Button */}
-            <div className="sticky bottom-0 bg-white border-t border-slate-100 p-6 flex justify-end">
-              <Button
-                className={`gap-2 px-8 py-6 text-base ${registeredIds.includes(selectedOpportunity.id)
-                    ? 'bg-green-500 hover:bg-green-600 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70'
-                  }`}
-                onClick={() => handleRegister(selectedOpportunity.id)}
-                disabled={registeredIds.includes(selectedOpportunity.id)}
-              >
-                {registeredIds.includes(selectedOpportunity.id) ? (
-                  <>
+            {/* Modal Footer */}
+            <div className="sticky bottom-0 bg-white border-t border-slate-100 p-6 space-y-4">
+              {/* Already registered state */}
+              {registeredIds.includes(selectedOpportunity.id) ? (
+                <div className="flex justify-end">
+                  <Button className="gap-2 px-8 py-6 text-base bg-green-500 hover:bg-green-600 cursor-not-allowed" disabled>
                     <CheckCircle className="w-5 h-5" /> Already Registered
-                  </>
-                ) : (
-                  <>
+                  </Button>
+                </div>
+              ) : selectedOpportunity.eventType === 'group' && !showGroupForm ? (
+                /* Group event — prompt to open group form */
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="text-sm text-slate-500 space-y-0.5">
+                      {selectedOpportunity.groupMinMembers && selectedOpportunity.groupMaxMembers && (
+                        <p>
+                          Group size: <span className="font-semibold text-slate-700">
+                            {selectedOpportunity.groupMinMembers}–{selectedOpportunity.groupMaxMembers} members
+                          </span>
+                        </p>
+                      )}
+                      {selectedOpportunity.registrationFee && (
+                        <p>Fee per member: <span className="font-semibold text-emerald-600">{selectedOpportunity.registrationFee}</span></p>
+                      )}
+                    </div>
+                    <Button
+                      className="gap-2 px-8 py-6 text-base bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70"
+                      onClick={() => setShowGroupForm(true)}
+                    >
+                      <Users className="w-5 h-5" /> Register as Group
+                    </Button>
+                  </div>
+                </div>
+              ) : selectedOpportunity.eventType === 'group' && showGroupForm ? (
+                /* Group registration form */
+                <div className="space-y-4 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                      <Users className="w-4 h-4 text-accent" /> Group Registration
+                    </h4>
+                    <button onClick={() => setShowGroupForm(false)} className="text-xs text-slate-400 hover:text-slate-600 underline">Cancel</button>
+                  </div>
+
+                  {/* Member count */}
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm font-medium text-slate-700 w-36">Number of members</label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => updateMemberCount(memberCount - 1)}
+                        className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                        disabled={memberCount <= (selectedOpportunity.groupMinMembers ?? 2)}
+                      >−</button>
+                      <span className="w-8 text-center font-semibold text-slate-900">{memberCount}</span>
+                      <button
+                        type="button"
+                        onClick={() => updateMemberCount(memberCount + 1)}
+                        className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                        disabled={memberCount >= (selectedOpportunity.groupMaxMembers ?? 10)}
+                      >+</button>
+                    </div>
+                    {selectedOpportunity.groupMinMembers && selectedOpportunity.groupMaxMembers && (
+                      <span className="text-xs text-slate-400">
+                        ({selectedOpportunity.groupMinMembers}–{selectedOpportunity.groupMaxMembers} allowed)
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Member name inputs */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {Array.from({ length: memberCount }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-slate-400 w-16">Member {i + 1}</span>
+                        <input
+                          type="text"
+                          placeholder={`Enter name`}
+                          value={memberNames[i] || ''}
+                          onChange={e => {
+                            const copy = [...memberNames];
+                            copy[i] = e.target.value;
+                            setMemberNames(copy);
+                          }}
+                          className="flex-1 text-sm px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Fee summary */}
+                  {selectedOpportunity.registrationFee && (
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-3 flex items-center justify-between text-sm">
+                      <span className="text-slate-600">
+                        {memberCount} members × <span className="font-semibold">{selectedOpportunity.registrationFee}</span> per member
+                      </span>
+                      <span className="font-bold text-emerald-700">Total: {selectedOpportunity.registrationFee} ×{memberCount}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end">
+                    <Button
+                      className="gap-2 px-8 py-5 text-base bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70"
+                      onClick={handleGroupRegister}
+                    >
+                      <CheckCircle className="w-5 h-5" /> Confirm Registration
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* Single event — original flow */
+                <div className="flex justify-end">
+                  <Button
+                    className="gap-2 px-8 py-6 text-base bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70"
+                    onClick={() => handleRegister(selectedOpportunity.id)}
+                  >
                     <ExternalLink className="w-5 h-5" /> Register Now
-                  </>
-                )}
-              </Button>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

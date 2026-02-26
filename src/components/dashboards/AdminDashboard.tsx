@@ -1,4 +1,4 @@
-import { Briefcase, Eye, PlusCircle, TrendingUp } from "lucide-react";
+import { Briefcase, Eye, PlusCircle, TrendingUp, Users, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
@@ -87,11 +87,25 @@ const AdminDashboard = () => {
           {myPostings.map((post) => (
             <div key={post.id} className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <p className="font-medium text-foreground text-sm truncate">{post.title}</p>
                   <Badge variant={post.status === "expiring" ? "destructive" : "secondary"} className="text-xs">
                     {post.status === "expiring" ? "Expiring Soon" : post.category}
                   </Badge>
+                  {post.eventType === "group" ? (
+                    <Badge className="text-xs bg-accent/10 text-accent border border-accent/20 flex items-center gap-1">
+                      <Users className="w-3 h-3" /> Group
+                    </Badge>
+                  ) : (
+                    <Badge className="text-xs bg-slate-100 text-slate-500 border border-slate-200 flex items-center gap-1">
+                      <User className="w-3 h-3" /> Single
+                    </Badge>
+                  )}
+                  {post.registrationFee && (
+                    <Badge className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      💰 {post.registrationFee}
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {post.views || 0} views · {post.saves || 0} saves · Deadline: {post.deadline}
